@@ -33,12 +33,33 @@ class PaginaInicial extends StatefulWidget {
 class _MinhaPaginaInicial extends State<PaginaInicial> {
   BotoesMaisMenos peso = BotoesMaisMenos(nome: 'Peso', numero: 59);
   BotoesMaisMenos idade = BotoesMaisMenos(nome: 'Idade', numero: 22);
-  MeuSlider SliderAltura = MeuSlider();
+  MeuSlider sliderAltura = MeuSlider();
 
-  double calculaIMC() {
-    double alturaEmMetro = SliderAltura.getNumero / 100;
+  String calculaIMC() {
+    double alturaEmMetro = ((sliderAltura.getNumero) / 100);
     debugPrint('valores: Peso: ${peso.getNumero}, Altura: $alturaEmMetro');
-    return (peso.getNumero / (alturaEmMetro * alturaEmMetro));
+    return (peso.getNumero / (alturaEmMetro * alturaEmMetro)).toStringAsFixed(2);
+  }
+
+  Color _corMasculino = Colors.black;
+  Color _corFeminino = corDeFundoUnpressed;
+
+  void alteraCoresSexo(bool masculino){
+    // var aux= _corFeminino;
+    if (masculino){
+      _corMasculino = Colors.black;
+      _corFeminino = corDeFundoUnpressed;      
+    }else{
+      _corMasculino = corDeFundoUnpressed;
+      _corFeminino = Colors.black;
+    }
+
+    // _corFeminino = _corMasculino;
+    // _corMasculino = aux;
+
+    // _corMasculino = _corMasculino == Colors.black? Colors.grey: Colors.black;
+    // _corFeminino = _corFeminino == Colors.black? Colors.grey: Colors.black;
+
   }
 
   @override
@@ -65,35 +86,57 @@ class _MinhaPaginaInicial extends State<PaginaInicial> {
             ),
             Row(
               children: [
-                BotaoSexo(
-                  icone: Icons.male,
-                  nome: 'masculino',
-                  corDeFundo: corDeFundoPressed,
+                Bloco(
+                  corDeFundo: _corMasculino,
+                  conteudo: GestureDetector(
+                    onTap: () {
+                      setState(() {
+                        alteraCoresSexo(true);
+                      });
+                    },
+                    child:  BotaoSexo(
+                        icone: Icons.male,
+                        nome: 'masculino',
+                      ),
+                    ),
                 ),
-                BotaoSexo(
-                  icone: Icons.female,
-                  nome: 'feminino',
-                  corDeFundo: corDeFundoUnpressed,
+                
+                Bloco(
+                  corDeFundo: _corFeminino,
+                  conteudo: GestureDetector(
+                    onTap: (() {
+                      setState(() {                   
+                        alteraCoresSexo(false);
+                      });
+                    }),
+                    child: BotaoSexo(
+                      icone: Icons.female,
+                      nome: 'feminino',
+                    ),
+                  ),
                 ),
               ],
             ),
-            Bloco(conteudo: SliderAltura),
+            Bloco(conteudo: sliderAltura),
             Row(
               children: [
                 Bloco(conteudo: peso),
                 Bloco(conteudo: idade),
               ],
             ),
-            ElevatedButton(
-              onPressed: () {
-                debugPrint('IMC: ${calculaIMC()}');
-              },
-              style: ElevatedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(vertical: 30),
-                  primary: const Color(0xffeb1555)),
-              child: Text(
-                'CALCULAR',
-                style: criaTextoPadrao(cor: Colors.white, tamanho: 20),
+            Padding(
+              padding: const EdgeInsets.all(8.0),
+              child: ElevatedButton(
+                onPressed: () {
+                  debugPrint('IMC: ${calculaIMC()}');
+                },
+                style: ElevatedButton.styleFrom(
+                    padding: const EdgeInsets.symmetric(vertical: 30),
+                    primary: const Color(0xffeb1555)),
+                child: Text(
+                  'CALCULAR',
+                  style: criaTextoPadrao(cor: Colors.white, tamanho: 20),
+                ),
               ),
             )
           ],
@@ -106,18 +149,15 @@ class _MinhaPaginaInicial extends State<PaginaInicial> {
 class BotaoSexo extends StatelessWidget {
   final IconData icone;
   final String nome;
-  late Color corDeFundo;
   BotaoSexo(
       {Key? key,
       required this.icone,
-      required this.nome,
-      required this.corDeFundo})
+      required this.nome,})
       : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return Bloco(
-      conteudo: Column(
+    return Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(
@@ -130,8 +170,8 @@ class BotaoSexo extends StatelessWidget {
             style: criaTextoPadrao(cor: Colors.white70, tamanho: 20),
           ),
         ],
-      ),
-    );
+      )
+    ;
   }
 }
 
@@ -153,24 +193,26 @@ Color corDeFundoUnpressed = const Color(0xFF1d1e30);
 
 class Bloco extends StatelessWidget {
   final Widget conteudo;
-  const Bloco({
+  // final void Function() respostaAoToque;
+  Color corDeFundo = corDeFundoPressed;
+
+  Bloco({
     Key? key,
-    required this.conteudo,
+    required this.conteudo, this.corDeFundo=const Color(0xFF1d1e30), 
+    // required this.respostaAoToque,
   }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Expanded(
-      child: Padding(
-        padding: const EdgeInsets.all(8.0),
-        child: Container(
-          decoration: BoxDecoration(
-            borderRadius: BorderRadius.circular(8),
-            color: corDeFundoUnpressed,
-          ),
-          height: 200,
-          child: conteudo,
+      child: Container(
+        margin: const EdgeInsets.all(8.0),
+        decoration: BoxDecoration(
+          borderRadius: BorderRadius.circular(8),
+          color: corDeFundo,
         ),
+        height: 200,
+        child: conteudo,
       ),
     );
   }
@@ -275,7 +317,7 @@ class _MeuSliderState extends State<MeuSlider> {
         ),
         RichText(
           text: TextSpan(
-            text: '${(widget._numero).round()}',
+            text: '${(widget._numero).ceil()}',
             style:
                 criaTextoPadrao(cor: Colors.white, tamanho: 50, negrito: true),
             children: [
@@ -287,6 +329,7 @@ class _MeuSliderState extends State<MeuSlider> {
           ),
         ),
         Slider(
+          divisions: 200,
           value: widget._numero,
           min: 50,
           max: 250,
@@ -303,4 +346,3 @@ class _MeuSliderState extends State<MeuSlider> {
     );
   }
 }
-
