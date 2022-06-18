@@ -31,25 +31,25 @@ class PaginaInicial extends StatefulWidget {
 }
 
 class _MinhaPaginaInicial extends State<PaginaInicial> {
-  BotoesMaisMenos peso = BotoesMaisMenos(nome: 'Peso', numero: 59);
-  BotoesMaisMenos idade = BotoesMaisMenos(nome: 'Idade', numero: 22);
-  MeuSlider sliderAltura = MeuSlider();
+  int valorPeso = 59, valorIdade = 22, altura = 150;
 
   String calculaIMC() {
-    double alturaEmMetro = ((sliderAltura.getNumero) / 100);
-    debugPrint('valores: Peso: ${peso.getNumero}, Altura: $alturaEmMetro');
-    return (peso.getNumero / (alturaEmMetro * alturaEmMetro)).toStringAsFixed(2);
+    double alturaEmMetro = (altura / 100);
+    debugPrint('valores: Peso: $valorPeso, Altura: $alturaEmMetro');
+    return (valorPeso / (alturaEmMetro * alturaEmMetro)).toStringAsFixed(2);
+    // return '$valorPeso e $valorIdade e $altura';
+    // return '${(valorPeso / (altura * altura))}';
   }
 
   Color _corMasculino = Colors.black;
   Color _corFeminino = corDeFundoUnpressed;
 
-  void alteraCoresSexo(bool masculino){
+  void alteraCoresSexo(bool masculino) {
     // var aux= _corFeminino;
-    if (masculino){
+    if (masculino) {
       _corMasculino = Colors.black;
-      _corFeminino = corDeFundoUnpressed;      
-    }else{
+      _corFeminino = corDeFundoUnpressed;
+    } else {
       _corMasculino = corDeFundoUnpressed;
       _corFeminino = Colors.black;
     }
@@ -59,7 +59,6 @@ class _MinhaPaginaInicial extends State<PaginaInicial> {
 
     // _corMasculino = _corMasculino == Colors.black? Colors.grey: Colors.black;
     // _corFeminino = _corFeminino == Colors.black? Colors.grey: Colors.black;
-
   }
 
   @override
@@ -70,20 +69,15 @@ class _MinhaPaginaInicial extends State<PaginaInicial> {
       //O Q REMOVE O SAFE AREA
       child: Scaffold(
         backgroundColor: corDeFundo,
+        appBar: AppBar(
+          backgroundColor: corDeFundo,
+          title: const Text('Calculadora de IMC'),
+          centerTitle: true,
+          elevation: 0,
+        ),
         body: Column(
           crossAxisAlignment: CrossAxisAlignment.stretch,
           children: [
-            const Padding(
-              padding: EdgeInsets.symmetric(vertical: 15),
-              child: Text(
-                'Calculadora de IMC',
-                textAlign: TextAlign.center,
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 20,
-                ),
-              ),
-            ),
             Row(
               children: [
                 Bloco(
@@ -94,18 +88,17 @@ class _MinhaPaginaInicial extends State<PaginaInicial> {
                         alteraCoresSexo(true);
                       });
                     },
-                    child:  BotaoSexo(
-                        icone: Icons.male,
-                        nome: 'masculino',
-                      ),
+                    child: BotaoSexo(
+                      icone: Icons.male,
+                      nome: 'masculino',
                     ),
+                  ),
                 ),
-                
                 Bloco(
                   corDeFundo: _corFeminino,
                   conteudo: GestureDetector(
                     onTap: (() {
-                      setState(() {                   
+                      setState(() {
                         alteraCoresSexo(false);
                       });
                     }),
@@ -117,18 +110,65 @@ class _MinhaPaginaInicial extends State<PaginaInicial> {
                 ),
               ],
             ),
-            Bloco(conteudo: sliderAltura),
+            Bloco(
+              conteudo: MeuSlider(
+                numero: altura,
+                alteraValor: (value) {
+                  setState(() {
+                    altura = value.toInt();
+                  });
+                },
+              ),
+            ),
             Row(
               children: [
-                Bloco(conteudo: peso),
-                Bloco(conteudo: idade),
+                Bloco(
+                  conteudo: BotoesMaisMenos(
+                    nome: 'Peso',
+                    numero: valorPeso,
+                    incrementar: () {
+                      setState(() {
+                        valorPeso++;
+                      });
+                    },
+                    decrementar: () {
+                      setState(() {
+                        valorPeso--;
+                      });
+                    },
+                  ),
+                ),
+                Bloco(
+                  conteudo: BotoesMaisMenos(
+                    nome: 'Idade',
+                    numero: valorIdade,
+                    decrementar: () {
+                      setState(() {
+                        valorIdade--;
+                      });
+                    },
+                    incrementar: () {
+                      setState(() {
+                        valorIdade++;
+                      });
+                    },
+                  ),
+                ),
               ],
             ),
             Padding(
               padding: const EdgeInsets.all(8.0),
               child: ElevatedButton(
                 onPressed: () {
-                  debugPrint('IMC: ${calculaIMC()}');
+                  // debugPrint('IMC: ${calculaIMC()}');
+                  Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (context) => SegundaTela(
+                        imc: double.parse(calculaIMC()),
+                      ),
+                    ),
+                  );
                 },
                 style: ElevatedButton.styleFrom(
                     padding: const EdgeInsets.symmetric(vertical: 30),
@@ -138,7 +178,7 @@ class _MinhaPaginaInicial extends State<PaginaInicial> {
                   style: criaTextoPadrao(cor: Colors.white, tamanho: 20),
                 ),
               ),
-            )
+            ),
           ],
         ),
       ),
@@ -149,29 +189,28 @@ class _MinhaPaginaInicial extends State<PaginaInicial> {
 class BotaoSexo extends StatelessWidget {
   final IconData icone;
   final String nome;
-  BotaoSexo(
-      {Key? key,
-      required this.icone,
-      required this.nome,})
-      : super(key: key);
+  BotaoSexo({
+    Key? key,
+    required this.icone,
+    required this.nome,
+  }) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
     return Column(
-        mainAxisAlignment: MainAxisAlignment.center,
-        children: [
-          Icon(
-            icone,
-            color: Colors.white,
-            size: 90,
-          ),
-          Text(
-            nome.toUpperCase(),
-            style: criaTextoPadrao(cor: Colors.white70, tamanho: 20),
-          ),
-        ],
-      )
-    ;
+      mainAxisAlignment: MainAxisAlignment.center,
+      children: [
+        Icon(
+          icone,
+          color: Colors.white,
+          size: 90,
+        ),
+        Text(
+          nome.toUpperCase(),
+          style: criaTextoPadrao(cor: Colors.white70, tamanho: 20),
+        ),
+      ],
+    );
   }
 }
 
@@ -198,7 +237,8 @@ class Bloco extends StatelessWidget {
 
   Bloco({
     Key? key,
-    required this.conteudo, this.corDeFundo=const Color(0xFF1d1e30), 
+    required this.conteudo,
+    this.corDeFundo = const Color(0xFF1d1e30),
     // required this.respostaAoToque,
   }) : super(key: key);
 
@@ -220,8 +260,15 @@ class Bloco extends StatelessWidget {
 
 class BotoesMaisMenos extends StatefulWidget {
   final String nome;
-  late int numero;
-  BotoesMaisMenos({Key? key, required this.nome, required this.numero})
+  int numero;
+  final void Function() incrementar;
+  final void Function() decrementar;
+  BotoesMaisMenos(
+      {Key? key,
+      required this.nome,
+      required this.numero,
+      required this.incrementar,
+      required this.decrementar})
       : super(key: key);
 
   int get getNumero {
@@ -260,9 +307,7 @@ class _BotoesMaisMenosState extends State<BotoesMaisMenos> {
                 iconSize: 40,
                 onPressed: () {
                   debugPrint('botaomenos');
-                  setState(() {
-                    widget.numero--;
-                  });
+                  widget.decrementar();
                 },
                 icon: const Icon(Icons.remove),
               ),
@@ -278,9 +323,7 @@ class _BotoesMaisMenosState extends State<BotoesMaisMenos> {
                 iconSize: 40,
                 onPressed: () {
                   debugPrint('botaomais');
-                  setState(() {
-                    widget.numero++;
-                  });
+                  widget.incrementar();
                 },
                 icon: const Icon(Icons.add),
               ),
@@ -293,13 +336,15 @@ class _BotoesMaisMenosState extends State<BotoesMaisMenos> {
 }
 
 class MeuSlider extends StatefulWidget {
-  double _numero = 150;
+  int numero;
+  final void Function(double) alteraValor;
 
-  MeuSlider({Key? key}) : super(key: key);
+  MeuSlider({Key? key, required this.numero, required this.alteraValor})
+      : super(key: key);
 
-  double get getNumero {
-    return _numero;
-  }
+  // double get getNumero {
+  //   return _numero;
+  // }
 
   @override
   State<MeuSlider> createState() => _MeuSliderState();
@@ -317,7 +362,7 @@ class _MeuSliderState extends State<MeuSlider> {
         ),
         RichText(
           text: TextSpan(
-            text: '${(widget._numero).ceil()}',
+            text: '${(widget.numero)}',
             style:
                 criaTextoPadrao(cor: Colors.white, tamanho: 50, negrito: true),
             children: [
@@ -329,8 +374,8 @@ class _MeuSliderState extends State<MeuSlider> {
           ),
         ),
         Slider(
-          divisions: 200,
-          value: widget._numero,
+          // divisions: 200,
+          value: widget.numero.toDouble(),
           min: 50,
           max: 250,
           inactiveColor: const Color(0xff8d8998),
@@ -338,7 +383,8 @@ class _MeuSliderState extends State<MeuSlider> {
           thumbColor: const Color(0xffeb1555),
           onChanged: (double value) {
             setState(() {
-              widget._numero = value;
+              widget.alteraValor(value);
+              // widget.numero = value.toInt();
             });
           },
         ),
@@ -346,3 +392,130 @@ class _MeuSliderState extends State<MeuSlider> {
     );
   }
 }
+
+class SegundaTela extends StatelessWidget {
+  final double imc;
+  SegundaTela({Key? key, required this.imc}) : super(key: key);
+
+  TextStyle criaEstiloTexto(Color cor) {
+    return TextStyle(color: cor, fontWeight: FontWeight.bold, fontSize: 30);
+  }
+
+  late String msg;
+
+  Text classificacaoIMC() {
+    if (imc < 18.5) {
+      msg = 'DÁ PRA COMER MAIS UM TIQUIN';
+      return Text(
+        'MAGREZA',
+        style: criaEstiloTexto(Colors.green),
+      );
+    } else if (imc >= 18.5 && imc < 25.0) {
+      msg = 'TÁ NICE';
+      return Text(
+        'NORMAL',
+        style: criaEstiloTexto(Colors.green),
+      );
+    } else if (imc >= 25.0 && imc < 30.0) {
+      msg = 'TA ENGORDANDO AE';
+      return Text(
+        'SOBREPESO',
+        style: criaEstiloTexto(Colors.yellow),
+      );
+    } else if (imc >= 30.0 && imc < 40.0) {
+      msg = 'TA GORDO PRA PORRA BICHO';
+      return Text(
+        'OBESIDADE',
+        style: criaEstiloTexto(Colors.orange),
+      );
+    } else if (imc >= 40.0) {
+      msg = 'VAI DE BASE JAJA';
+      return Text(
+        'OBSESIDADE GRAVE',
+        style: criaEstiloTexto(Colors.red),
+      );
+    } else {
+      return Text(
+        'WTF',
+        style: criaEstiloTexto(Colors.blue),
+      );
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      backgroundColor: corDeFundo,
+      appBar: AppBar(
+        backgroundColor: corDeFundo,
+        title: const Text('Calculadora de IMC'),
+        centerTitle: true,
+        elevation: 0,
+      ),
+      body: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: [
+          const Padding(
+            padding: EdgeInsets.symmetric(vertical: 30.0, horizontal: 10),
+            child: Text(
+              'Seu Resultado:',
+              style: TextStyle(
+                color: Colors.white,
+                fontSize: 40,
+              ),
+            ),
+          ),
+          Expanded(
+            child: Container(
+              margin: const EdgeInsets.all(10),
+              decoration: const BoxDecoration(
+                color: Color(0xFF1d1e30),
+                borderRadius: BorderRadius.all(Radius.circular(10)),
+              ),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  classificacaoIMC(),
+                  Text(
+                    imc.toStringAsFixed(1),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 100,
+                    ),
+                  ),
+                  Text(
+                    msg,
+                    textAlign: TextAlign.center,
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontWeight: FontWeight.bold,
+                      fontSize: 30,
+                    ),
+                  )
+                ],
+              ),
+            ),
+          ),
+          Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: ElevatedButton(
+              onPressed: () {
+                // debugPrint('IMC: ${calculaIMC()}');
+                Navigator.pop(context);
+              },
+              style: ElevatedButton.styleFrom(
+                  padding: const EdgeInsets.symmetric(vertical: 50),
+                  primary: const Color(0xffeb1555)),
+              child: Text(
+                'Re-Calcular',
+                style: criaTextoPadrao(cor: Colors.white, tamanho: 20),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+}
+
